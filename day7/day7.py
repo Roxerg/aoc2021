@@ -1,11 +1,11 @@
 f = open("input.txt", "r")
 
 
-
 input = f.read()
 input = input.split(",")
 input = list(map(int, input))
 
+# part 1 to confirm median works
 
 def median(l):
     half = len(l) // 2

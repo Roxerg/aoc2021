@@ -12,7 +12,6 @@ import (
 func firstOne(inarr []int) {
 	sort.Ints(inarr)
 	median := int(math.Abs(float64((inarr[((len(inarr))/2)-1] + inarr[((len(inarr))/2)]) / 2)))
-
 	cost := 0
 	for i := range inarr {
 		cost += int(math.Abs(float64(inarr[i] - median)))
