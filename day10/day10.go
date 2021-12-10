@@ -15,6 +15,11 @@ func firstOne(inarr []string) {
 	bracketPairs["{"] = "}"
 	bracketPairs["["] = "]"
 	bracketPairs["<"] = ">"
+	charValues := make(map[string]int)
+	charValues[")"] = 3
+	charValues["]"] = 57
+	charValues["}"] = 1197
+	charValues[">"] = 25137
 
 	sum := 0
 	for _, line := range inarr {
@@ -28,16 +33,7 @@ func firstOne(inarr []string) {
 			} else {
 				ending := expectedEndingStack[len(expectedEndingStack)-1]
 				if char != ending {
-					switch char {
-					case ")":
-						sum += 3
-					case "]":
-						sum += 57
-					case "}":
-						sum += 1197
-					case ">":
-						sum += 25137
-					}
+					sum += charValues[char]
 					break
 				} else if char == ending {
 					expectedEndingStack, _ = Pop(expectedEndingStack)
@@ -59,6 +55,11 @@ func secondOne(inarr []string) {
 	bracketPairs["{"] = "}"
 	bracketPairs["["] = "]"
 	bracketPairs["<"] = ">"
+	charValues := make(map[string]int)
+	charValues[")"] = 1
+	charValues["]"] = 2
+	charValues["}"] = 3
+	charValues[">"] = 4
 
 	scores := []int{}
 
@@ -87,17 +88,7 @@ func secondOne(inarr []string) {
 		if !isCorrupted {
 			for idx := len(expectedEndingStack) - 1; idx >= 0; idx-- {
 				end := expectedEndingStack[idx]
-				linescore = linescore * 5
-				switch end {
-				case ")":
-					linescore += 1
-				case "]":
-					linescore += 2
-				case "}":
-					linescore += 3
-				case ">":
-					linescore += 4
-				}
+				linescore = linescore*5 + charValues[end]
 			}
 			// fmt.Println(strings.Join(expectedEndingStack, ""), " score ", linescore)
 			scores = append(scores, linescore)
