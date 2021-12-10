@@ -9,22 +9,21 @@ import (
 
 func firstOne(inarr []string) {
 
+	bracketPairs := make(map[string]string)
+
+	bracketPairs["("] = ")"
+	bracketPairs["{"] = "}"
+	bracketPairs["["] = "]"
+	bracketPairs["<"] = ">"
+
 	sum := 0
 	for _, line := range inarr {
 		expectedEndingStack := []string{}
-		chars := strings.Split(line, "")
 
-		for _, char := range chars {
-			if char == "(" || char == "[" || char == "{" || char == "<" {
-				if char == "(" {
-					expectedEndingStack = Push(expectedEndingStack, ")")
-				} else if char == "[" {
-					expectedEndingStack = Push(expectedEndingStack, "]")
-				} else if char == "{" {
-					expectedEndingStack = Push(expectedEndingStack, "}")
-				} else if char == "<" {
-					expectedEndingStack = Push(expectedEndingStack, ">")
-				}
+		for _, char := range strings.Split(line, "") {
+			bracketEnd, exists := bracketPairs[char]
+			if exists {
+				expectedEndingStack = Push(expectedEndingStack, bracketEnd)
 
 			} else {
 				ending := expectedEndingStack[len(expectedEndingStack)-1]
@@ -55,23 +54,22 @@ func firstOne(inarr []string) {
 
 func secondOne(inarr []string) {
 
+	bracketPairs := make(map[string]string)
+	bracketPairs["("] = ")"
+	bracketPairs["{"] = "}"
+	bracketPairs["["] = "]"
+	bracketPairs["<"] = ">"
+
 	scores := []int{}
+
 	for _, line := range inarr {
 		expectedEndingStack := []string{}
 		isCorrupted := false
-		chars := strings.Split(line, "")
 
-		for _, char := range chars {
-			if char == "(" || char == "[" || char == "{" || char == "<" {
-				if char == "(" {
-					expectedEndingStack = Push(expectedEndingStack, ")")
-				} else if char == "[" {
-					expectedEndingStack = Push(expectedEndingStack, "]")
-				} else if char == "{" {
-					expectedEndingStack = Push(expectedEndingStack, "}")
-				} else if char == "<" {
-					expectedEndingStack = Push(expectedEndingStack, ">")
-				}
+		for _, char := range strings.Split(line, "") {
+			bracketEnd, exists := bracketPairs[char]
+			if exists {
+				expectedEndingStack = Push(expectedEndingStack, bracketEnd)
 
 			} else {
 				ending := expectedEndingStack[len(expectedEndingStack)-1]
@@ -87,10 +85,8 @@ func secondOne(inarr []string) {
 
 		linescore := 0
 		if !isCorrupted {
-			fmt.Println("-----")
 			for idx := len(expectedEndingStack) - 1; idx >= 0; idx-- {
 				end := expectedEndingStack[idx]
-				fmt.Println(end, linescore)
 				linescore = linescore * 5
 				switch end {
 				case ")":
@@ -103,7 +99,7 @@ func secondOne(inarr []string) {
 					linescore += 4
 				}
 			}
-			fmt.Println(strings.Join(expectedEndingStack, ""), " score ", linescore)
+			// fmt.Println(strings.Join(expectedEndingStack, ""), " score ", linescore)
 			scores = append(scores, linescore)
 		}
 
@@ -116,12 +112,6 @@ func secondOne(inarr []string) {
 
 func Run() {
 	_, inarr := utils.LoadFile("day10", "\n")
-	// inarr := strings.Split(instr, ",")
-	// inarrInt := []int{}
-	// for i := range inarr {
-	// 	num, _ := strconv.Atoi(strings.TrimSpace(inarr[i]))
-	// 	inarrInt = append(inarrInt, num)
-	// }
 
 	firstOne(inarr)
 	secondOne(inarr)
