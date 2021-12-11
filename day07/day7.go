@@ -1,4 +1,4 @@
-package day7
+package day07
 
 import (
 	"fmt"
@@ -37,7 +37,7 @@ func secondOne(inarr []int) {
 }
 
 func Run() {
-	instr, _ := utils.LoadFile("day7", "\n")
+	instr, _ := utils.LoadFile("day07", "\n")
 	inarr := strings.Split(instr, ",")
 	inarrInt := []int{}
 	for i := range inarr {

@@ -1,4 +1,4 @@
-package day2
+package day02
 
 import (
 	"fmt"
@@ -54,7 +54,7 @@ func secondOne(inarr []string) {
 }
 
 func Run() {
-	_, inarr := utils.LoadFile("day2", "\n")
+	_, inarr := utils.LoadFile("day02", "\n")
 	firstOne(inarr)
 	secondOne(inarr)
 }
