@@ -1,8 +1,6 @@
 package main
 
-import (
-	"roxerg_aoc/day12"
-)
+import "roxerg_aoc/day13"
 
 func main() {
 	// day01.Run()
@@ -15,5 +13,6 @@ func main() {
 	// day09.Run()
 	// day10.Run()
 	// day11.Run()
-	day12.Run()
+	// day12.Run()
+	day13.Run()
 }
