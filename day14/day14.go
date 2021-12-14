@@ -13,7 +13,6 @@ func firstOne(template []string, insertions [][]string, iters uint64) {
 		for idx := range template[:len(template)-1] {
 			inserted := false
 			for _, insert := range insertions {
-				// fmt.Println(insert[0][:1], insert[0][1:])
 				if template[idx] == insert[0][:1] && template[idx+1] == insert[0][1:] {
 					inserted = true
 					if idx == 0 {
@@ -26,10 +25,8 @@ func firstOne(template []string, insertions [][]string, iters uint64) {
 			if !inserted {
 				newTemplate = append(newTemplate, template[idx+1])
 			}
-			fmt.Println(idx, template[idx], newTemplate)
 		}
 		template = append(make([]string, 0, len(newTemplate)), newTemplate...)
-		fmt.Println(template)
 	}
 
 	counts := make(map[string]int)
@@ -62,33 +59,13 @@ func secondOne(template []string, insertions [][]string, iters uint64) {
 	pairsCounter := make(map[string]uint64)
 
 	for idx := range template[:len(template)-1] {
-		_, letterOk := lettersCounter[template[idx]]
-		_, pairOk := pairsCounter[template[idx]+template[idx+1]]
-
-		if letterOk {
-			lettersCounter[template[idx]] += 1
-		} else {
-			lettersCounter[template[idx]] = 1
-		}
-
-		if pairOk {
-			pairsCounter[template[idx]+template[idx+1]] += 1
-		} else {
-			pairsCounter[template[idx]+template[idx+1]] = 1
-		}
+		incrementOrInitialize(lettersCounter, template[idx], 1)
+		incrementOrInitialize(pairsCounter, template[idx]+template[idx+1], 1)
 
 		if idx == len(template)-2 {
-			_, lastLetterOk := lettersCounter[template[idx+1]]
-			if lastLetterOk {
-				lettersCounter[template[idx+1]] += 1
-			} else {
-				lettersCounter[template[idx+1]] = 1
-			}
+			incrementOrInitialize(lettersCounter, template[idx+1], 1)
 		}
 	}
-
-	// fmt.Println(lettersCounter)
-	fmt.Println(pairsCounter)
 
 	for step := uint64(0); step < iters; step++ {
 		tempPairCounts := make(map[string]uint64)
@@ -100,18 +77,10 @@ func secondOne(template []string, insertions [][]string, iters uint64) {
 				c := pairsCounter[oldPair]
 				if c > 0 {
 					newLetter := insert[1]
-					newPairL := insert[0][:1] + newLetter
-					newPairR := newLetter + insert[0][1:]
-					//fmt.Println("old: ", oldPair, " insertletter: ", newLetter, " newLeft: ", newPairL, "newRight: ", newPairR)
 					incrementOrInitialize(lettersCounter, newLetter, c)
-					incrementOrInitialize(tempPairCounts, newPairL, c)
-					incrementOrInitialize(tempPairCounts, newPairR, c)
-					decrement(tempPairCounts, oldPair, c)
-
-					// lettersCounter = incrementOrInitialize(lettersCounter, newLetter)
-					// pairsCounter = incrementOrInitialize(pairsCounter, newPairL)
-					// pairsCounter = incrementOrInitialize(pairsCounter, newPairR)
-					// pairsCounter = decrementIfExists(pairsCounter, oldPair)
+					incrementOrInitialize(tempPairCounts, insert[0][:1]+newLetter, c)
+					incrementOrInitialize(tempPairCounts, newLetter+insert[0][1:], c)
+					decrementOrInitialize(tempPairCounts, oldPair, c)
 				} else {
 
 				}
@@ -119,27 +88,16 @@ func secondOne(template []string, insertions [][]string, iters uint64) {
 
 		}
 		for key, val := range tempPairCounts {
-			_, ok := pairsCounter[key]
-			if ok {
-				pairsCounter[key] += val
-			} else {
-				// fmt.Println(key, "didnt exist")
-				pairsCounter[key] = val
-			}
+			incrementOrInitialize(pairsCounter, key, val)
 			if pairsCounter[key] == 0 {
 				delete(pairsCounter, key)
 			}
 		}
 
-		fmt.Println(step + 1) //"pairs", pairsCounter, "letters", lettersCounter)
-
 	}
 
 	max := uint64(0)
 	min := uint64(18446744073709551615)
-
-	//fmt.Println(pairsCounter)
-	//fmt.Println(lettersCounter)
 
 	for _, count := range lettersCounter {
 		if count < min {
@@ -161,7 +119,10 @@ func Run() {
 		insertions = append(insertions, strings.Split(line, " -> "))
 	}
 
-	//firstOne(template, insertions, 10)
+	// naive solution
+	firstOne(template, insertions, 10)
+
+	// what i should have done from the start
 	secondOne(template, insertions, 40)
 }
 
@@ -175,12 +136,6 @@ func incrementOrInitialize(counters map[string]uint64, key string, c uint64) uin
 	return c
 }
 
-func decrement(counters map[string]uint64, key string, c uint64) uint64 {
-	_, ok := counters[key]
-	if ok {
-		counters[key] -= c
-	} else {
-		counters[key] = -c
-	}
-	return c
+func decrementOrInitialize(counters map[string]uint64, key string, c uint64) uint64 {
+	return incrementOrInitialize(counters, key, -c)
 }
