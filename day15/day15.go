@@ -21,76 +21,107 @@ type Coords struct {
 
 func firstOne(grid [][]int) {
 
-	fmt.Println(grid[0])
-	unvisited := make(map[Coords]Node)
-	frontline := make(map[Coords]Node)
-	frontline[Coords{0, 0}] = Node{0, 0, true}
+	fmt.Println("")
+}
+
+func remove(slice [][2]int, s int) [][2]int {
+	return append(slice[:s], slice[s+1:]...)
+}
+
+func withinBounds(grid [][]int, coords [2]int) bool {
+	yy := len(grid)
+	xx := len(grid[0])
+	return coords[0] >= 0 && coords[0] < yy && coords[1] >= 0 && coords[1] < xx
+}
+
+func AFuckingStar(grid [][]int) {
+	visited := [][]bool{}
+	frontlineCoords := [][2]int{}
+	costSoFar := [][]int{}
+	goal := [2]int{len(grid) - 1, len(grid[0]) - 1}
 
 	for y := range grid {
-		for x := range grid[y] {
-			unvisited[Coords{x, y}] = Node{grid[y][x], math.MaxInt, false}
+		visited = append(visited, []bool{})
+		costSoFar = append(costSoFar, []int{})
+		for range grid[y] {
+			visited[y] = append(visited[y], false)
+			costSoFar[y] = append(costSoFar[y], math.MaxInt)
 		}
 	}
-
-	found := false
+	costSoFar[0][0] = 0
+	frontlineCoords = append(frontlineCoords, [2]int{0, 0})
 
 	iter := 0
-
-	for len(unvisited) > 0 && !found {
+	for len(frontlineCoords) > 0 {
 		iter += 1
-		//fmt.Println("front", frontline)
-		newFrontline := make(map[Coords]Node)
-		for currCoords, currNode := range frontline {
-
-			if currCoords.x == len(grid)-1 && currCoords.y == len(grid)-1 {
-				found = true
-				break
+		// fmt.Println(frontlineCoords)
+		currentCoords := [2]int{}
+		var currentCost int
+		min := math.MaxInt
+		minIdx := 0
+		for idx, coord := range frontlineCoords {
+			if costSoFar[coord[0]][coord[1]] < min {
+				minIdx = idx
+				min = costSoFar[coord[0]][coord[1]]
 			}
-
-			for _, dir := range []Coords{{0, 1}, {0, -1}, {1, 0}, {-1, 0}} {
-				nextCoords := addCoords(currCoords, dir)
-
-				nextNode, ok := unvisited[nextCoords]
-				if ok {
-					// fmt.Println("neigbour coord", nextCoords)
-					if !nextNode.visited {
-
-						newTotal := nextNode.totalDistance
-						priceToGo := currNode.totalDistance + nextNode.cost
-
-						if newTotal > priceToGo {
-							// fmt.Println(newTotal, ">", currNode.totalDistance, "+", nextNode.cost)
-							newTotal = priceToGo
-						}
-
-						nextNode.totalDistance = priceToGo
-
-						new, okk := newFrontline[nextCoords]
-						if okk {
-							if newTotal < new.totalDistance {
-								newFrontline[nextCoords] = Node{nextNode.cost, priceToGo, false}
-							}
-						} else {
-							newFrontline[nextCoords] = Node{nextNode.cost, priceToGo, false}
-						}
-						// frontline[nextCoords] = Node{nextNode.cost, priceToGo, false}
-
-					}
-				}
-
-			}
-			currNode.visited = true
-			frontline[currCoords] = Node{currNode.cost, currNode.totalDistance, true}
-			delete(unvisited, currCoords)
 		}
-		if !found {
-			frontline = newFrontline
+
+		if currentCoords[0] == goal[0] && currentCoords[1] == goal[1] {
+			fmt.Println(currentCost)
 		}
-		// if iter == 3 {
-		// 	break
+
+		currentCoords = [2]int{frontlineCoords[minIdx][0], frontlineCoords[minIdx][1]}
+		currentCost = costSoFar[currentCoords[0]][currentCoords[1]]
+
+		frontlineCoords = remove(frontlineCoords, minIdx)
+		visited[currentCoords[0]][currentCoords[1]] = true
+
+		// fmt.Println("---")
+		// for _, v := range visited {
+		// 	fmt.Println(v)
 		// }
+
+		for _, dir := range [][2]int{{0, 1}, {1, 0}, {0, -1}, {-1, 0}} {
+			neighbourCoord := [2]int{currentCoords[0] + dir[0], currentCoords[1] + dir[1]}
+
+			ok := withinBounds(grid, neighbourCoord)
+			if ok {
+				skip := visited[neighbourCoord[0]][neighbourCoord[1]]
+				if skip {
+					continue
+				} else {
+					alreadyInFrontline := false
+
+					for _, f := range frontlineCoords {
+						if neighbourCoord[0] == f[0] && neighbourCoord[1] == f[1] {
+							alreadyInFrontline = true
+							break
+						}
+					}
+
+					if !alreadyInFrontline {
+						frontlineCoords = append(frontlineCoords, [2]int{neighbourCoord[0], neighbourCoord[1]})
+					}
+
+				}
+			} else {
+				continue
+			}
+
+			withCurrentCost := currentCost + grid[neighbourCoord[0]][neighbourCoord[1]]
+			if withCurrentCost < costSoFar[neighbourCoord[0]][neighbourCoord[1]] {
+				costSoFar[neighbourCoord[0]][neighbourCoord[1]] = withCurrentCost
+			}
+
+		}
+
 	}
-	fmt.Println(frontline)
+
+	// fmt.Println("---")
+	// for _, v := range visited {
+	// 	fmt.Println(v)
+	// }
+	fmt.Println(costSoFar[goal[0]][goal[1]])
 
 }
 
@@ -108,14 +139,10 @@ func secondOne(grid [][]int) {
 
 	// do one big row first
 	for I := 0; I < 5; I++ {
-		//fmt.Println("oldgrid", grid)
-		//offsetX := I * origX
 		offsetY := I * origY
 		for y := range grid {
 			for x := range grid[y] {
 				newgrid[offsetY+y][x] = grid[y][x]
-				//fmt.Println("set", offsetY+y, x)
-
 			}
 		}
 
@@ -126,11 +153,6 @@ func secondOne(grid [][]int) {
 		}
 	}
 
-	// fmt.Println("newgrid")
-	// for i := range newgrid {
-	// 	fmt.Println(newgrid[i])
-	// }
-
 	bigRow := make([][]int, len(newgrid))
 	for i := range bigRow {
 		bigRow[i] = make([]int, origX)
@@ -138,11 +160,6 @@ func secondOne(grid [][]int) {
 
 	for i := range bigRow {
 		bigRow[i] = append([]int{}, newgrid[i][:origX]...)
-	}
-
-	fmt.Println("bigrow")
-	for i := range bigRow {
-		fmt.Println(bigRow[i])
 	}
 
 	// do rows
@@ -164,13 +181,13 @@ func secondOne(grid [][]int) {
 
 	}
 
-	fmt.Println("final")
-	for i := range newgrid {
-		fmt.Println(newgrid[i])
-	}
+	// fmt.Println("final")
+	// for i := range newgrid {
+	// 	fmt.Println(newgrid[i])
+	// }
 	fmt.Println("----")
 
-	firstOne(newgrid)
+	AFuckingStar(newgrid)
 }
 
 func Run() {
@@ -185,7 +202,7 @@ func Run() {
 		}
 	}
 
-	firstOne(grid)
+	//AFuckingStar(grid)
 	secondOne(grid)
 }
 
